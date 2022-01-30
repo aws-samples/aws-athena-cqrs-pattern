@@ -2,8 +2,10 @@
 # -*- encoding: utf-8 -*-
 #vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 
+import aws_cdk as core
+
 from aws_cdk import (
-  core,
+  Stack,
   aws_apigateway as apigateway,
   aws_dynamodb as dynamodb,
   aws_ec2,
@@ -14,11 +16,13 @@ from aws_cdk import (
   aws_logs,
   aws_s3 as s3
 )
+from constructs import Construct
 
-class AwsAthenaCqrsPatternsStack(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
-    super().__init__(scope, id, **kwargs)
+class AwsAthenaCqrsPatternsStack(Stack):
+
+  def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    super().__init__(scope, construct_id, **kwargs)
 
     # The code that defines your stack goes here
     vpc_name = self.node.try_get_context("vpc_name")
@@ -62,7 +66,7 @@ class AwsAthenaCqrsPatternsStack(core.Stack):
       function_name="CommandHander",
       handler="command_handler.lambda_handler",
       description="athena query executor",
-      code=_lambda.Code.asset("./src/main/python/CommandHander"),
+      code=_lambda.Code.from_asset("./src/main/python/CommandHander"),
       environment={
         #TODO: MUST set appropriate environment variables for your workloads.
         'AWS_REGION_NAME': core.Aws.REGION,
@@ -132,7 +136,7 @@ class AwsAthenaCqrsPatternsStack(core.Stack):
       function_name="QueryResultsHandler",
       handler="query_results_handler.lambda_handler",
       description="athena query results handler",
-      code=_lambda.Code.asset("./src/main/python/QueryResultsHandler"),
+      code=_lambda.Code.from_asset("./src/main/python/QueryResultsHandler"),
       environment={
         #TODO: MUST set appropriate environment variables for your workloads.
         'AWS_REGION_NAME': core.Aws.REGION,
