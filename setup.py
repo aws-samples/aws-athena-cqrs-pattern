@@ -19,7 +19,8 @@ setuptools.setup(
     packages=setuptools.find_packages(where="aws_athena_cqrs_patterns"),
 
     install_requires=[
-        "aws-cdk.core==1.71.0",
+        "aws-cdk-lib",
+        "constructs"
     ],
 
     python_requires=">=3.6",
