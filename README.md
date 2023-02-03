@@ -95,7 +95,7 @@ Enjoy!
 2. AWS Athena 웹 콘솔에 접속한 후, 다음과 같이 `hive_ads`라는 샘플 데이터를 위한 database를 생성한다.
   
   ```
-  create database hive_ads;
+  CREATE DATABASE IF NOT EXISTS hive_ads;
   ```
 
 3. 샘플 데이터를 처리할 Athena 테이블을 생성한다.
