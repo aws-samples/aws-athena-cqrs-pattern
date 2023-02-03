@@ -24,11 +24,45 @@ class AwsAthenaCqrsPatternsStack(Stack):
   def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
     super().__init__(scope, construct_id, **kwargs)
 
-    # The code that defines your stack goes here
-    vpc_name = self.node.try_get_context("vpc_name")
-    vpc = aws_ec2.Vpc.from_lookup(self, "VPC",
-      is_default=True, #XXX: Whether to match the default VPC
-      vpc_name=vpc_name)
+    #XXX: For creating this CDK Stack in the existing VPC,
+    # remove comments from the below codes and
+    # comments out vpc = aws_ec2.Vpc(..) codes,
+    # then pass -c vpc_name=your-existing-vpc to cdk command
+    # for example,
+    # cdk -c vpc_name=your-existing-vpc syth
+    #
+    # vpc_name = self.node.try_get_context("vpc_name")
+    # vpc = aws_ec2.Vpc.from_lookup(self, "AwsAthenaCqrsPatternsVPC",
+    #   is_default=True, #XXX: Whether to match the default VPC
+    #   vpc_name=vpc_name)
+
+    #XXX: To use more than 2 AZs, be sure to specify the account and region on your stack.
+    #XXX: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_ec2/Vpc.html
+    vpc = aws_ec2.Vpc(self, 'AwsAthenaCqrsPatternsVPC',
+      cidr="10.0.0.0/21",
+      max_azs=3,
+
+      # 'subnetConfiguration' specifies the "subnet groups" to create.
+      # Every subnet group will have a subnet for each AZ, so this
+      # configuration will create `2 groups × 3 AZs = 6` subnets.
+      subnet_configuration=[
+        {
+          "cidrMask": 24,
+          "name": "Public",
+          "subnetType": aws_ec2.SubnetType.PUBLIC,
+        },
+        {
+          "cidrMask": 24,
+          "name": "Private",
+          "subnetType": aws_ec2.SubnetType.PRIVATE_WITH_NAT
+        }
+      ],
+      gateway_endpoints={
+        "S3": aws_ec2.GatewayVpcEndpointOptions(
+          service=aws_ec2.GatewayVpcEndpointAwsService.S3
+        )
+      }
+    )
 
     s3_bucket_name = self.node.try_get_context('s3_bucket_name')
     if s3_bucket_name:
