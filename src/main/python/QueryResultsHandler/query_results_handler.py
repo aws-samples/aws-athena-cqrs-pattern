@@ -2,10 +2,8 @@
 # -*- encoding: utf-8 -*-
 #vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 
-import json
 import os
 import logging
-import pprint
 from urllib.parse import urlparse
 
 import boto3
