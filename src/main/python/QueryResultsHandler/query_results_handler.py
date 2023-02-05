@@ -100,7 +100,7 @@ def get_user_id_by_query_id(table, query_execution_id):
       IndexName='query_id',
       KeyConditionExpression=Key('query_id').eq(query_execution_id)
     )
-  except ClientError as ex:
+  except botocore.exceptions.ClientError as ex:
     LOGGER.error(ex.response['Error']['Message'])
     #TODO: send alarm by sns
     raise ex
