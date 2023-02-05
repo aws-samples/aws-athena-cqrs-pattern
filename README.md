@@ -94,13 +94,13 @@ Enjoy!
 
 2. AWS Athena 웹 콘솔에 접속한 후, 다음과 같이 `hive_ads`라는 샘플 데이터를 위한 database를 생성한다.
   
-  ```
+  ```SQL
   CREATE DATABASE IF NOT EXISTS hive_ads;
   ```
 
 3. 샘플 데이터를 처리할 Athena 테이블을 생성한다.
 
-  ```
+  ```SQL
   CREATE EXTERNAL TABLE impressions (
       requestBeginTime string,
       adId string,
@@ -128,7 +128,7 @@ Enjoy!
 
 ## Send Athena Query
 
-```
+``` shell script
 $ export API_URL=https://{restapi-id}.execute-api.{region}.amazonaws.com/{stage_name}
 $ curl -X POST ${API_URL}/?user={email-address} \
   -H 'Content-Type: application/json' \
@@ -145,7 +145,7 @@ $ curl -X POST ${API_URL}/?user={email-address} \
 
 예를 들어, `hive_ads.impressions` 테이블에서 특정 시간 동안의 `impressionid` 중 상위 100 개를 계산하는 쿼리를 수행하고자 하는 경우에 다음과 같이 할 수 있다.
 
-```
+``` shell script
 $ export API_URL=https://ewv0mp92bz.execute-api.us-east-1.amazonaws.com/v1
 $ curl -X POST ${API_URL}/?user=xyz@example.com \
   -H 'Content-Type: application/json' \
