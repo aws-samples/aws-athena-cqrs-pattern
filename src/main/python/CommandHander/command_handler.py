@@ -11,7 +11,6 @@ import datetime
 from urllib.parse import urlparse
 
 import boto3
-import botocore
 
 LOGGER = logging.getLogger()
 if len(LOGGER.handlers) > 0:
