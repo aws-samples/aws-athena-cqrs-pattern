@@ -1,5 +1,5 @@
 # pip install aws-cdk
-aws-cdk-lib==2.10.0
+aws-cdk-lib==2.64.0
 
 # pip install boto3
 boto3==1.14.13
