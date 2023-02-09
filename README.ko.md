@@ -1,14 +1,15 @@
 
 # Amazon Athena CQRS(Command and Query Responsibility Segregation) Pattern
-[CQRS Pattern](https://microservices.io/patterns/data/cqrs.html) Implementation with Amazon Athena
-- AWS Athena query is requested through RESTful API, then the query execution results will be sent by email
+AWS Athena를 활용한 [CQRS 패턴](https://microservices.io/patterns/data/cqrs.html) 구현 예제
+- RESTful API로 받은 aws athena query 실행 요청은 받은 후, query 실행 결과를 다운로드 받을 수 있는 링크를 email로 전송해 주는 예제
 
 ## Architecture
 ![athena_cqrs_pattern_arch](./assets/athena_cqrs_pattern_arch.svg)
 
 ## Deployment
-1. Install the CdK by referring to the [Getting Started With the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html). Create IAM User to execute cdk and register the profile into `~/.aws/config`.
-The below example shows the profile information of a new IAM User, `dcdk_user` in `~/.aws/config` file.
+1. [Getting Started With the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)를 참고해서 cdk를 설치하고,
+cdk를 실행할 때 사용할 IAM User를 생성한 후, `~/.aws/config`에 등록한다.
+예를 들어서, `cdk_user`라는 IAM User를 생성 한 후, 아래와 같이 `~/.aws/config`에 추가로 등록한다.
 
     ```shell script
     $ cat ~/.aws/config
@@ -18,7 +19,7 @@ The below example shows the profile information of a new IAM User, `dcdk_user` i
     region=us-east-1
     ```
 
-1. Run `git clone` command to download the source code, and set up cdk deployment environment.
+2. 아래와 같이 소스 코드를 git clone 한 후에, cdk 배포 환경 구성을 한다.
 
     ```shell script
     $ git clone https://github.com/aws-samples/aws-athena-cqrs-pattern.git
@@ -28,38 +29,33 @@ The below example shows the profile information of a new IAM User, `dcdk_user` i
     (.env) $ pip install -r requirements.txt
     ```
 
-2. Configure `cdk.context.json` file.
+3. `cdk.context.json` 파일을 열어서, `s3_bucket_name_suffix`에 aws athena 쿼리 실행 결과를 저장할 s3 bucket 이름의 suffix를 적고,<br/>
+`athena_work_group_name`에 aws athena에서 쿼리를 수행할 Work Group Name을 입력한다.<br/>
+`email_from_address`에 e-mail 발신자 주소를 넣는다.<br/>
 
     ```json
     {
+      "vpc_name": "Your-VPC-Name",
       "s3_bucket_name_suffix": "Your-S3-Bucket-Name-Suffix",
       "athena_work_group_name": "Your-Athena-Work-Group-Name",
       "email_from_address": "Your-Sender-Email-Addr"
     }
     ```
-    For example,
-    ```json
-    {
-      "s3_bucket_name_suffix": "zy2wbzt",
-      "athena_work_group_name": "primary",
-      "email_from_address": "sender@example.com",
-    }
-    ```    
 
-   :warning: Make suure `email_from_address` is available. For more information, see [Amazon Simple Email Service - Verifying an email address identity](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html).
-   For example, you can verify the email address, `sender@amazon.com` by running the following command:
-      ```shell script
+   `email_from_address`은 [Amazon SES에서 이메일 주소 확인](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html)을 참고해서 반드시 사용 가능한 email 주소인지 확인한다. (배포 전에 한번만 확인 하면 된다.)
+    예를 들어, `sender@amazon.com`라는 email 주소를 확인하려면 다음과 같이 한다.
+      ```
       aws ses verify-email-identity --email-address sender@amazon.com
       ```
 
-3. Deploy CDK Stack by running `cdk deploy` command
+4. `cdk deploy` 명령어를 이용해서 배포한다.
     ```shell script
     (.env) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     (.env) $ export CDK_DEFAULT_REGION=us-east-1
     (.env) $ cdk --profile=cdk_user deploy
     ```
 
-4. (Optional) Clean up.
+5. 배포한 애플리케이션을 삭제하려면, `cdk destroy` 명령어를 아래와 같이 실행 한다.
     ```shell script
     (.env) $ cdk --profile=cdk_user destroy
     ```
@@ -76,11 +72,11 @@ Enjoy!
 
 # Demo
 ## Preparation
-1. Check if there is a sample data in your region.<br/>
-For example, if you are using `us-east-1`, replace `my-region` with `us-east-1` and then run the command:
+1. 현재 AWS Account에서 사용 중인 Region의 S3에 샘플 데이터가 들어 있는지 확인한다.
+예를 들어 `us-east-1` 리전을 사용 중 이라면, `my-region`을 `us-east-1`으로 변경한다.
 
-    ```shell script
-   $ aws s3 ls s3://{my-region}.elasticmapreduce/samples/hive-ads/tables/impressions/
+  ```shell script
+  $ aws s3 ls s3://{my-region}.elasticmapreduce/samples/hive-ads/tables/impressions/
 
       PRE dt=2009-04-12-13-00/
       PRE dt=2009-04-12-13-05/
@@ -94,21 +90,18 @@ For example, if you are using `us-east-1`, replace `my-region` with `us-east-1` 
       PRE dt=2009-04-12-14-20/
       PRE dt=2009-04-12-15-00/
       PRE dt=2009-04-12-15-05/
-    ```
+  ```
 
-2. Go to the [AWS Athena Query editor](https://console.aws.amazon.com/athena/home?#/query-editor), and then create the database, `hive_ads`.
+2. AWS Athena 웹 콘솔에 접속한 후, 다음과 같이 `hive_ads`라는 샘플 데이터를 위한 database를 생성한다.
   
-    ```SQL
-    CREATE DATABASE IF NOT EXISTS hive_ads;
-    ```
+  ```SQL
+  CREATE DATABASE IF NOT EXISTS hive_ads;
+  ```
 
-3. Create the table in `hive_ads` database.
-   
-   Replace `my-region` with your region.
-   For example, `s3://us-east-1.elasticmapreduce/samples/hive-ads/tables/impressions/`
+3. 샘플 데이터를 처리할 Athena 테이블을 생성한다.
 
-    ```SQL
-    CREATE EXTERNAL TABLE impressions (
+  ```SQL
+  CREATE EXTERNAL TABLE impressions (
       requestBeginTime string,
       adId string,
       impressionId string,
@@ -124,11 +117,14 @@ For example, if you are using `us-east-1`, replace `my-region` with `us-east-1` 
       threadId string,
       hostname string,
       sessionId string)
-    PARTITIONED BY (dt string)
-    ROW FORMAT  serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  PARTITIONED BY (dt string)
+  ROW FORMAT  serde 'org.apache.hive.hcatalog.data.JsonSerDe'
       with serdeproperties ( 'paths'='requestBeginTime, adId, impressionId, referrer, userAgent, userCookie, ip' )
-    LOCATION 's3://{my-region}.elasticmapreduce/samples/hive-ads/tables/impressions/';
-    ```
+  LOCATION 's3://{my-region}.elasticmapreduce/samples/hive-ads/tables/impressions/';
+  ```
+
+  `my-region`을 현재 사용하고 있는 AWS Region으로 변경한다. 예를 들어, `us-east-1` 리전을 사용 중이라면,
+  **LOCATION** 절에서 `s3://us-east-1.elasticmapreduce/samples/hive-ads/tables/impressions/`으로 변경합니다.
 
 ## Send Athena Query
 
@@ -147,7 +143,7 @@ $ curl -X POST ${API_URL}/?user={email-address} \
   }'
 ```
 
-For example, if you wanted to perform a query on the `hive_ads.impressions` table to count the top 100 of the `impressionids` over a specific time period, you could do the following.
+예를 들어, `hive_ads.impressions` 테이블에서 특정 시간 동안의 `impressionid` 중 상위 100 개를 계산하는 쿼리를 수행하고자 하는 경우에 다음과 같이 할 수 있다.
 
 ``` shell script
 $ export API_URL=https://ewv0mp92bz.execute-api.us-east-1.amazonaws.com/v1
@@ -165,9 +161,9 @@ $ curl -X POST ${API_URL}/?user=xyz@example.com \
 ```
 
 ## Query Execution Results
-When the AWS Athena query is finished running, you will receive a link to download the query result file via email.
+AWS Athena 쿼리 실행이 완료 되면, e-mail로 쿼리 결과 파일을 다운로드 받을 수 있는 link를 받을 수 있다.
 
-**Figure 1.** E-mail example
+**Figure 1.** AWS Athena 쿼리 실행 결과 다운로드 링크 전송 e-mail
 ![athena-cqrs-pattern-email-screenshot](./assets/athena-cqrs-pattern-email-screenshot.png)
 
 ## Security
